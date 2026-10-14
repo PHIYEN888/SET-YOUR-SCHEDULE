@@ -1,0 +1,179 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #2477d4;
+  --color-brand-dark: #1b5fae;
+  --color-brand-light: #eaf4ff;
+  --color-navy: #16324f;
+  --color-success: #36b37e;
+  --color-success-light: #e7f7ef;
+  --color-danger: #f87171;
+  --color-danger-light: #fef0f0;
+
+  --shadow-soft: 0 10px 30px -12px rgb(22 50 79 / 0.18);
+  --shadow-card: 0 20px 50px -20px rgb(22 50 79 / 0.28);
+  --shadow-glow: 0 0 0 6px rgb(36 119 212 / 0.15);
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-shake: shake 0.45s ease-in-out;
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-led: led 0.6s ease-in-out infinite;
+  --animate-slide-in: slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-wiggle: wiggle 0.5s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes led {
+    0%,
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      box-shadow:
+        0 0 12px 6px rgb(36 119 212 / 0.85),
+        0 0 40px 18px rgb(36 119 212 / 0.45);
+    }
+    50% {
+      opacity: 0.55;
+      transform: translate(-50%, -50%) scale(0.85);
+      box-shadow:
+        0 0 6px 2px rgb(36 119 212 / 0.5),
+        0 0 16px 6px rgb(36 119 212 / 0.2);
+    }
+  }
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-12deg);
+    }
+    75% {
+      transform: rotate(12deg);
+    }
+  }
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-navy);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, #eaf4ff 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #eaf4ff 0%, transparent 55%), #ffffff;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+dialog::backdrop {
+  background: rgb(22 50 79 / 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.flip-scene {
+  perspective: 1400px;
+}
+.flip-card {
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.flip-card[data-flipped='true'] {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+.deck-pattern {
+  background-color: #2477d4;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.18) 1.5px, transparent 0),
+    linear-gradient(160deg, #2a84e8 0%, #1b5fae 100%);
+  background-size:
+    18px 18px,
+    100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
