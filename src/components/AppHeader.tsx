@@ -25,13 +25,12 @@ interface AppHeaderProps {
 
 export function PillMateLogo({ className = '' }: { className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <span className="relative flex h-8 w-14 overflow-hidden rounded-full bg-brand shadow-soft" aria-hidden="true">
-        <span className="h-full w-1/2 bg-white ring-2 ring-brand ring-inset" />
-      </span>
-      <span className="text-xl font-extrabold tracking-tight text-navy sm:text-2xl">
-        Pill<span className="text-brand">Mate</span>
-      </span>
+    <span className={`inline-flex items-center ${className}`}>
+      <img
+        src="/images/logo.png"
+        alt="PillMate Logo"
+        className="h-10 w-auto object-contain transition-transform duration-200 hover:scale-105 sm:h-12"
+      />
     </span>
   )
 }
@@ -83,7 +82,7 @@ export function AppHeader(props: AppHeaderProps) {
         {showStatus && (
           <div className="order-last flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center lg:order-none lg:flex-1 lg:gap-5">
             <div className="flex-1">
-              <GameProgress phase={phase} />
+              <GameProgress phase={phase} lang={lang} />
             </div>
             <div className="flex items-center justify-between gap-2 sm:justify-end">
               <div className="flex items-center gap-1.5 rounded-2xl bg-brand-light px-3 py-2 text-brand" aria-label={`${t.score} ${score} ${t.of} ${MAX_SCORE}`}>
@@ -101,11 +100,11 @@ export function AppHeader(props: AppHeaderProps) {
           <button
             type="button"
             onClick={props.onToggleLanguage}
-            title={lang === 'vi' ? 'Switch to English' : 'Đổi sang Tiếng Việt'}
+            title={t.switchLanguageTooltip}
             className="flex h-11 items-center gap-1.5 rounded-xl bg-white px-3 font-extrabold text-navy ring-2 ring-brand/15 transition hover:bg-brand-light hover:ring-brand/40 sm:h-12"
           >
             <Globe className="size-4 text-brand" />
-            <span className="text-xs uppercase">{lang === 'vi' ? 'VI' : 'EN'}</span>
+            <span className="text-xs uppercase">{t.languageBadge}</span>
           </button>
 
           {/* Leaderboard button */}

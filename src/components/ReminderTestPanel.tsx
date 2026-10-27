@@ -1,8 +1,8 @@
 import { BellRing, CalendarDays, CheckCircle2, CircleCheck, FlaskConical, Flag, Pill, Tag, Volume2, VolumeX } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { describeDays, formatTime12, STAGE_POINTS } from '../game/logic'
-import type { Lang } from '../game/i18n'
-import { translations } from '../game/i18n'
+import type { Lang } from '../locales'
+import { translations } from '../locales'
 import type { ReminderConfig } from '../game/types'
 import { Mascot } from './Mascot'
 import { Button } from './ui/Button'
@@ -180,7 +180,7 @@ export function ReminderTestPanel({
                 <CalendarDays className="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" />
                 <div>
                   <dt className="text-xs font-bold tracking-wide text-navy/50 uppercase">{t.repeatsLabel}</dt>
-                  <dd className="text-lg font-bold">{describeDays(reminder.days)}</dd>
+                  <dd className="text-lg font-bold">{describeDays(reminder.days, t)}</dd>
                 </div>
               </div>
               <div className="flex items-start gap-3">

@@ -1,8 +1,8 @@
 import { AlarmClock, CalendarCheck, CalendarDays, Clock, Coffee, Moon, Sun, Sunrise, type LucideIcon } from 'lucide-react'
 import { WEEKDAYS } from '../game/challenges'
 import { formatTime12 } from '../game/logic'
-import type { Lang } from '../game/i18n'
-import { translations } from '../game/i18n'
+import type { Lang } from '../locales'
+import { translations } from '../locales'
 import type { Challenge, ChallengeIcon as IconKey } from '../game/types'
 
 const ICONS: Record<IconKey, LucideIcon> = {
@@ -16,59 +16,6 @@ const ICONS: Record<IconKey, LucideIcon> = {
   double: Clock,
 }
 
-const VI_CHALLENGE_DETAILS: Record<number, { title: string; schedule: string; mission: string }> = {
-  1: {
-    title: 'Nhắc Nhở Buổi Sáng',
-    schedule: 'Mỗi ngày',
-    mission: 'Cài đặt nhắc nhở hàng ngày lúc 8:00 Sáng.',
-  },
-  2: {
-    title: 'Nhắc Nhở Buổi Trưa',
-    schedule: 'Mỗi ngày',
-    mission: 'Cài đặt nhắc nhở hàng ngày lúc 12:00 Trưa.',
-  },
-  3: {
-    title: 'Nhắc Nhở Buổi Tối',
-    schedule: 'Mỗi ngày',
-    mission: 'Cài đặt nhắc nhở hàng ngày lúc 7:00 Tối (19:00).',
-  },
-  4: {
-    title: 'Dậy Sớm Tinh Mơ',
-    schedule: 'Mỗi ngày',
-    mission: 'Tạo lịch nhắc nhở lúc 6:30 Sáng.',
-  },
-  5: {
-    title: 'Lịch Cuối Tuần',
-    schedule: 'Thứ Bảy và Chủ Nhật',
-    mission: 'Cài đặt nhắc nhở lúc 9:00 Sáng vào các ngày cuối tuần.',
-  },
-  6: {
-    title: 'Lịch Đi Làm / Đi Học',
-    schedule: 'Thứ Hai đến Thứ Sáu',
-    mission: 'Cài đặt nhắc nhở lúc 7:30 Sáng từ Thứ 2 đến Thứ 6.',
-  },
-  7: {
-    title: 'Kiểm Tra Buổi Chiều',
-    schedule: 'Mỗi ngày',
-    mission: 'Tạo lịch nhắc nhở hàng ngày lúc 3:00 Chiều (15:00).',
-  },
-  8: {
-    title: 'Lịch Cách Ngày',
-    schedule: 'Thứ Hai, Thứ Tư và Thứ Sáu',
-    mission: 'Cài đặt nhắc nhở lúc 8:30 Tối (20:30) vào Thứ 2, Thứ 4 và Thứ 6.',
-  },
-  9: {
-    title: 'Nhắc Hai Lần Mỗi Ngày',
-    schedule: 'Mỗi ngày',
-    mission: 'Thiết lập hai mốc giờ hàng ngày: 8:00 Sáng và 8:00 Tối (20:00).',
-  },
-  10: {
-    title: 'Lịch Uống 3 Lần Mỗi Ngày',
-    schedule: 'Mỗi ngày',
-    mission: 'Thiết lập ba mốc giờ hàng ngày: 8:00 Sáng, 12:00 Trưa và 8:00 Tối (20:00).',
-  },
-}
-
 export function ChallengeIcon({ icon, className = 'size-7' }: { icon: IconKey; className?: string }) {
   const Icon = ICONS[icon]
   return <Icon className={className} aria-hidden="true" />
@@ -80,10 +27,9 @@ interface ChallengeCardProps {
   lang?: Lang
 }
 
-export function ChallengeCard({ challenge, compact = false, lang = 'vi' }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, compact = false, lang = 'en' }: ChallengeCardProps) {
   const t = translations[lang]
-  const isVi = lang === 'vi'
-  const localized = isVi && VI_CHALLENGE_DETAILS[challenge.id] ? VI_CHALLENGE_DETAILS[challenge.id] : null
+  const localized = t.challenges[challenge.id]
 
   const title = localized?.title ?? challenge.title
   const scheduleLabel = localized?.schedule ?? challenge.scheduleLabel
@@ -97,7 +43,7 @@ export function ChallengeCard({ challenge, compact = false, lang = 'vi' }: Chall
         </span>
         <div className="min-w-0">
           <p className="text-xs font-bold tracking-[0.18em] text-brand uppercase">
-            {isVi ? `Thẻ thử thách #${challenge.id}` : `Challenge #${challenge.id}`}
+            {t.challengeCardNumber(challenge.id)}
           </p>
           <h3 className="truncate text-xl font-extrabold tracking-tight sm:text-2xl">{title}</h3>
         </div>

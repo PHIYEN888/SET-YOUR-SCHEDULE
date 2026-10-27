@@ -24,9 +24,9 @@ const LEADERBOARD_KEY = 'pillmate.leaderboard.v1'
 export const emptyStats: GameStats = { bestScore: 0, fastestMs: null, gamesPlayed: 0, gamesCompleted: 0 }
 
 const INITIAL_LEADERBOARD: LeaderboardEntry[] = [
-  { id: '1', name: 'Dr. Minh (PillMate Team)', score: 300, durationMs: 64000, challengeTitle: 'Morning Reminder', date: 'Demo' },
-  { id: '2', name: 'Lan Anh (Booth Visitor)', score: 300, durationMs: 82000, challengeTitle: 'Weekend Schedule', date: 'Demo' },
-  { id: '3', name: 'Hai Nam', score: 300, durationMs: 105000, challengeTitle: 'Double Reminder', date: 'Demo' },
+  { id: '1', name: 'Dr. Taylor (PillMate Team)', score: 300, durationMs: 64000, challengeTitle: 'Morning Reminder', date: 'Demo' },
+  { id: '2', name: 'Alex M. (Booth Visitor)', score: 300, durationMs: 82000, challengeTitle: 'Weekend Schedule', date: 'Demo' },
+  { id: '3', name: 'Jordan K.', score: 300, durationMs: 105000, challengeTitle: 'Double Reminder', date: 'Demo' },
 ]
 
 export function loadStats(): GameStats {
@@ -82,13 +82,9 @@ export function loadLanguage(): Lang {
   try {
     const saved = localStorage.getItem(LANG_KEY)
     if (saved === 'en' || saved === 'vi') return saved
-    // Auto-detect browser language: if Vietnamese, use 'vi'
-    if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('vi')) {
-      return 'vi'
-    }
-    return 'vi' // Default to Vietnamese for the exhibition context, or can be toggled to English
+    return 'en'
   } catch {
-    return 'vi'
+    return 'en'
   }
 }
 

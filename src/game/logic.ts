@@ -8,8 +8,7 @@ export const MAX_SCORE = STAGE_POINTS * STAGES.length
 
 export const TIME_SLOTS: { id: TimeSlot; label: string; range: string }[] = [
   { id: 'morning', label: 'Morning', range: '5 AM – 11 AM' },
-  { id: 'noon', label: 'Noon', range: '11 AM – 2 PM' },
-  { id: 'afternoon', label: 'Afternoon', range: '2 PM – 5 PM' },
+  { id: 'noon', label: 'Noon', range: '11 AM – 5 PM' },
   { id: 'evening', label: 'Evening', range: '5 PM – 12 AM' },
 ]
 
@@ -58,28 +57,16 @@ export function daysForRepeat(mode: RepeatMode, customDays: Weekday[]): Weekday[
   }
 }
 
-import type { Lang } from './i18n'
+import type { Lang, Translation } from '../locales'
+import { getTranslation } from '../locales'
 
-const VI_WEEKDAYS: Record<Weekday, string> = {
-  Mon: 'Thứ 2',
-  Tue: 'Thứ 3',
-  Wed: 'Thứ 4',
-  Thu: 'Thứ 5',
-  Fri: 'Thứ 6',
-  Sat: 'Thứ 7',
-  Sun: 'Chủ Nhật',
-}
-
-export function describeDays(days: Weekday[], lang: Lang = 'en'): string {
-  const isVi = lang === 'vi'
+export function describeDays(days: Weekday[], tOrLang: Translation | Lang = 'en'): string {
+  const t = typeof tOrLang === 'string' ? getTranslation(tOrLang) : tOrLang
   const set = new Set(days)
-  if (set.size === 7) return isVi ? 'Mỗi ngày' : 'Every day'
-  if (set.size === 5 && !set.has('Sat') && !set.has('Sun')) return isVi ? 'Ngày trong tuần (T2–T6)' : 'Weekdays'
-  if (set.size === 2 && set.has('Sat') && set.has('Sun')) return isVi ? 'Cuối tuần (T7 & CN)' : 'Weekends'
-  if (isVi) {
-    return WEEKDAYS.filter((d) => set.has(d)).map((d) => VI_WEEKDAYS[d]).join(', ')
-  }
-  return WEEKDAYS.filter((d) => set.has(d)).join(', ')
+  if (set.size === 7) return t.repeatEveryDay
+  if (set.size === 5 && !set.has('Sat') && !set.has('Sun')) return t.repeatWeekdaysDesc
+  if (set.size === 2 && set.has('Sat') && set.has('Sun')) return t.repeatWeekendsDesc
+  return WEEKDAYS.filter((d) => set.has(d)).map((d) => t.weekdaysFull[d] || d).join(', ')
 }
 
 function sameSet<T>(a: T[], b: T[]): boolean {
@@ -104,9 +91,12 @@ export function validateReminder(
   drafts: TimeDraft[],
   repeat: RepeatMode | null,
   customDays: Weekday[],
-  lang: Lang = 'en',
+  tOrLang: Translation | Lang = 'en',
 ): ReminderValidation {
-  const isVi = lang === 'vi'
+  const t = typeof tOrLang === 'string' ? getTranslation(tOrLang) : tOrLang
+  const localizedChallenge = t.challenges[challenge.id]
+  const expectedSchedule = localizedChallenge?.schedule ?? challenge.scheduleLabel
+
   const result: ReminderValidation = {
     ok: false,
     message: '',
@@ -117,73 +107,58 @@ export function validateReminder(
   }
 
   const converted = drafts.map(draftTo24h)
-  const incomplete = converted.map((t) => t === null)
+  const incomplete = converted.map((item) => item === null)
   if (incomplete.some(Boolean)) {
     result.timeErrors = incomplete
-    result.message = isVi
-      ? 'Gần xong rồi! Hãy chọn đầy đủ giờ, phút và AM hoặc PM cho từng mốc nhắc nhở.'
-      : 'Almost there! Pick an hour, minutes, and AM or PM for every reminder time.'
+    result.message = t.validationIncompleteTime
     return result
   }
   const times = converted as string[]
 
   if (times.length !== challenge.times.length) {
     result.timeCountError = true
-    if (isVi) {
-      result.message =
-        challenge.times.length > 1
-          ? `Nhiệm vụ này cần ${challenge.times.length} mốc giờ nhắc nhở. Hãy bấm Thêm giờ.`
-          : 'Nhiệm vụ này chỉ cần 1 mốc giờ nhắc. Hãy xóa bớt mốc giờ thừa.'
-    } else {
-      result.message =
-        challenge.times.length > 1
-          ? `This mission needs ${challenge.times.length} reminder times. Add another time.`
-          : 'This mission needs just one reminder time. Remove the extra one.'
-    }
+    result.message =
+      challenge.times.length > 1
+        ? t.validationNeedMoreTimes(challenge.times.length)
+        : t.validationNeedFewerTimes
     return result
   }
 
   if (new Set(times).size !== times.length) {
-    result.timeErrors = times.map((t, i) => times.indexOf(t) !== i)
-    result.message = isVi
-      ? 'Hai mốc giờ của bạn đang bị trùng nhau. Mỗi mốc nhắc nhở cần một giờ khác nhau.'
-      : 'Two of your reminder times are the same. Each time should be different.'
+    result.timeErrors = times.map((tm, i) => times.indexOf(tm) !== i)
+    result.message = t.validationDuplicateTimes
     return result
   }
 
-  const wrongTimes = times.map((t) => !challenge.times.includes(t))
+  const wrongTimes = times.map((tm) => !challenge.times.includes(tm))
   if (wrongTimes.some(Boolean)) {
     result.timeErrors = wrongTimes
-    result.message = isVi
-      ? 'Giờ nhắc chưa đúng với nhiệm vụ. Hãy kiểm tra lại giờ, phút và AM/PM.'
-      : "That time doesn't match your mission yet. Check the hour, minutes, and AM/PM."
+    result.message = t.validationWrongTimes
     return result
   }
 
   if (repeat === null) {
     result.repeatError = true
-    result.message = isVi ? 'Hãy chọn chu kỳ lặp lại cho lịch nhắc nhở.' : 'Choose how often your reminder should repeat.'
+    result.message = t.validationChooseRepeat
     return result
   }
 
   const days = daysForRepeat(repeat, customDays)
   if (repeat === 'custom' && days.length === 0) {
     result.daysError = true
-    result.message = isVi ? 'Hãy chọn ít nhất một ngày cho lịch tùy chọn của bạn.' : 'Select at least one day for your custom schedule.'
+    result.message = t.validationChooseAtLeastOneDay
     return result
   }
 
   if (!sameSet(days, challenge.days)) {
     if (repeat === 'custom') result.daysError = true
     else result.repeatError = true
-    result.message = isVi
-      ? `Chu kỳ lặp lại chưa trùng khớp với nhiệm vụ (${challenge.scheduleLabel}).`
-      : `The repeat schedule doesn't match. Your mission says: ${challenge.scheduleLabel}.`
+    result.message = t.validationRepeatMismatch(expectedSchedule)
     return result
   }
 
   result.ok = true
-  result.message = isVi ? 'TUYỆT VỜI! LỊCH ĐÃ ĐƯỢC THIẾT LẬP CHÍNH XÁC.' : 'PERFECT! YOUR SCHEDULE IS SET.'
+  result.message = t.validationSuccess
   return result
 }
 
@@ -191,8 +166,7 @@ export function slotForTime(time24: string): TimeSlot {
   const [h, m] = time24.split(':').map(Number)
   const minutes = h * 60 + m
   if (minutes >= 5 * 60 && minutes < 11 * 60) return 'morning'
-  if (minutes >= 11 * 60 && minutes < 14 * 60) return 'noon'
-  if (minutes >= 14 * 60 && minutes < 17 * 60) return 'afternoon'
+  if (minutes >= 11 * 60 && minutes < 17 * 60) return 'noon'
   return 'evening'
 }
 

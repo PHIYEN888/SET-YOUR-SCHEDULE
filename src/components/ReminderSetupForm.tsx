@@ -66,7 +66,7 @@ export function ReminderSetupForm({ challenge, completed, lang, onSuccess, onFai
 
   const handleSave = () => {
     if (completed) return
-    const validation = validateReminder(challenge, times, repeat, customDays, lang)
+    const validation = validateReminder(challenge, times, repeat, customDays, t)
     setResult(validation)
     setAttempt((a) => a + 1)
     if (validation.ok && repeat) {
@@ -133,6 +133,7 @@ export function ReminderSetupForm({ challenge, completed, lang, onSuccess, onFai
                     index={i}
                     value={tm}
                     disabled={completed}
+                    lang={lang}
                     error={Boolean(showError && result.timeErrors[i])}
                     onChange={(v) => updateTime(i, v)}
                     onRemove={
@@ -187,7 +188,7 @@ export function ReminderSetupForm({ challenge, completed, lang, onSuccess, onFai
               {repeat === 'custom' && (
                 <div
                   role="group"
-                  aria-label="Custom days"
+                  aria-label={t.customDaysGroupAria}
                   key={`days-${attempt}`}
                   className={`grid grid-cols-7 gap-1.5 rounded-2xl p-1 animate-fade-up ${showError && result.daysError ? 'animate-shake ring-2 ring-danger' : ''}`}
                 >
@@ -234,7 +235,7 @@ export function ReminderSetupForm({ challenge, completed, lang, onSuccess, onFai
                   value={label}
                   maxLength={30}
                   autoComplete="off"
-                  placeholder={lang === 'vi' ? 'Ví dụ: Vitamin, Thuốc huyết áp' : 'e.g. Vitamins'}
+                  placeholder={t.reminderLabelPlaceholder}
                   onChange={(e) => setLabel(e.target.value)}
                   className="h-12 rounded-xl bg-brand-light/50 px-4 text-base font-semibold text-navy ring-2 ring-brand/10 outline-none placeholder:text-navy/30 focus:ring-brand/50"
                 />

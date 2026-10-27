@@ -1,7 +1,7 @@
 import { ArrowRight, Hand, RotateCcw, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { Lang } from '../game/i18n'
-import { translations } from '../game/i18n'
+import type { Lang } from '../locales'
+import { translations } from '../locales'
 import type { Challenge } from '../game/types'
 import { ChallengeCard } from './ChallengeCard'
 import { Button } from './ui/Button'
@@ -16,13 +16,10 @@ interface ChallengeCardDeckProps {
 
 function CardBack({ label, index }: { label: string; index?: number }) {
   return (
-    <div className="deck-pattern flex size-full flex-col items-center justify-center gap-3 rounded-3xl p-5 text-white shadow-card">
-      <span className="relative flex h-12 w-20 overflow-hidden rounded-full bg-white/20 ring-2 ring-white/60" aria-hidden="true">
-        <span className="h-full w-1/2 bg-white" />
-      </span>
-      <span className="text-xl font-black tracking-tight">
-        Pill<span className="text-brand-light/80">Mate</span>
-      </span>
+    <div className="deck-pattern flex size-full flex-col items-center justify-center gap-3.5 rounded-3xl p-5 text-white shadow-card">
+      <div className="flex items-center justify-center rounded-2xl bg-white/95 px-4 py-2.5 shadow-sm">
+        <img src="/images/logo.png" alt="PillMate" className="h-12 w-auto object-contain" />
+      </div>
       {typeof index === 'number' && (
         <span className="flex size-7 items-center justify-center rounded-full bg-white/25 text-xs font-black">
           #{index + 1}
@@ -58,7 +55,7 @@ export function ChallengeCardDeck({ challenge, lang, onDraw, onRedraw, onAccept 
     <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 py-4 text-center sm:px-6 md:py-8">
       <header className="mb-4">
         <p className="text-xs font-bold tracking-[0.2em] text-brand uppercase sm:text-sm">
-          {lang === 'vi' ? 'Bước 1 trên 4 · Bốc thăm thử thách' : 'Step 1 of 4 · Draw your challenge'}
+          {t.drawStepBadge}
         </p>
         <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-5xl">{t.drawTitle}</h1>
         <p className="mt-2 text-base text-navy/70 sm:text-lg" aria-live="polite">
@@ -78,7 +75,7 @@ export function ChallengeCardDeck({ challenge, lang, onDraw, onRedraw, onAccept 
                   type="button"
                   onClick={() => onDraw(idx)}
                   className={`group relative flex h-72 cursor-pointer flex-col items-center justify-center rounded-3xl transition-all duration-300 hover:-translate-y-2 hover:scale-[1.03] focus-visible:ring-4 focus-visible:ring-brand/40 sm:h-80 ${rotation}`}
-                  aria-label={`Rút lá bài may mắn số ${idx + 1}`}
+                  aria-label={t.drawCardAria(idx)}
                 >
                   <CardBack label={t.cardChallengeLabel} index={idx} />
                   <span className="absolute bottom-5 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-black text-brand shadow-soft transition group-hover:bg-brand group-hover:text-white">
@@ -90,7 +87,7 @@ export function ChallengeCardDeck({ challenge, lang, onDraw, onRedraw, onAccept 
             })}
           </div>
           <p className="mt-4 text-xs font-semibold text-navy/40">
-            {lang === 'vi' ? 'Chạm vào 1 trong 3 lá bài bí ẩn để mở khóa nhiệm vụ' : 'Tap any of the 3 mystery cards to reveal your mission'}
+            {t.mysteryCardHint}
           </p>
         </div>
       ) : (
@@ -152,7 +149,7 @@ export function ChallengeCardDeck({ challenge, lang, onDraw, onRedraw, onAccept 
                 </button>
                 <span className="flex items-center gap-1 text-xs font-semibold text-navy/40">
                   <Sparkles className="size-3 text-brand" />
-                  {lang === 'vi' ? 'Chạm vào thẻ để tiếp tục' : 'Tap card to continue'}
+                  {t.tapCardToContinue}
                 </span>
               </div>
             </div>

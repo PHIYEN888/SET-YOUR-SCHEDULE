@@ -1,8 +1,8 @@
-import { Award, BookOpen, Check, CircleCheck, CircleDashed, Clock, Gift, Home, RotateCcw, Send, Sparkles, Timer, Trophy, Zap } from 'lucide-react'
+import { Award, Check, CircleCheck, CircleDashed, Clock, Gift, Home, RotateCcw, Send, Sparkles, Timer, Trophy, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { formatDuration, MAX_SCORE, STAGE_POINTS } from '../game/logic'
-import type { Lang } from '../game/i18n'
-import { translations } from '../game/i18n'
+import type { Lang } from '../locales'
+import { translations } from '../locales'
 import type { Challenge, Outcome, Stage } from '../game/types'
 import { Confetti } from './Confetti'
 import { Mascot } from './Mascot'
@@ -19,39 +19,24 @@ interface ResultScreenProps {
   isFastest: boolean
   lang: Lang
   onPlayAgain: () => void
-  onLearnMore: () => void
   onHome: () => void
   onSaveLeaderboard: (name: string) => void
 }
 
-function achievementFor(durationMs: number, failedAttempts: number, lang: Lang) {
-  const isVi = lang === 'vi'
-  if (failedAttempts === 0 && durationMs <= 120_000) {
-    return {
-      title: isVi ? 'Bậc Thầy Kỷ Lục' : 'Flawless Planner',
-      desc: isVi ? 'Không sai lần nào, dưới 2 phút' : 'No mistakes, under 2 minutes',
-      icon: Sparkles,
-    }
-  }
-  if (durationMs <= 120_000) {
-    return {
-      title: isVi ? 'Bác Sĩ Tốc Độ' : 'Speed Scheduler',
-      desc: isVi ? 'Hoàn thành dưới 2 phút' : 'Finished in under 2 minutes',
-      icon: Zap,
-    }
-  }
-  if (failedAttempts === 0) {
-    return {
-      title: isVi ? 'Chuẩn Xác Tuyệt Đối' : 'Perfect Precision',
-      desc: isVi ? 'Mọi thao tác đều đúng lần đầu' : 'Every answer right first time',
-      icon: Award,
-    }
-  }
-  return {
-    title: isVi ? 'Chuyên Gia Lịch Thuốc' : 'Reminder Pro',
-    desc: isVi ? 'Hoàn thành trọn vẹn cả 3 bước' : 'All three tasks complete',
-    icon: Trophy,
-  }
+type AchievementKey = 'flawless' | 'speed' | 'precision' | 'pro'
+
+const ACHIEVEMENT_ICONS = {
+  flawless: Sparkles,
+  speed: Zap,
+  precision: Award,
+  pro: Trophy,
+}
+
+function getAchievementKey(durationMs: number, failedAttempts: number): AchievementKey {
+  if (failedAttempts === 0 && durationMs <= 120_000) return 'flawless'
+  if (durationMs <= 120_000) return 'speed'
+  if (failedAttempts === 0) return 'precision'
+  return 'pro'
 }
 
 export function ResultScreen(props: ResultScreenProps) {
@@ -66,7 +51,6 @@ export function ResultScreen(props: ResultScreenProps) {
     isFastest,
     lang,
     onPlayAgain,
-    onLearnMore,
     onHome,
     onSaveLeaderboard,
   } = props
@@ -75,15 +59,12 @@ export function ResultScreen(props: ResultScreenProps) {
   const [savedToBoard, setSavedToBoard] = useState(false)
   const t = translations[lang]
 
-  const stageLabels: Record<Stage, string> = {
-    setup: lang === 'vi' ? 'Cài đặt lịch' : 'Reminder setup',
-    match: lang === 'vi' ? 'Khớp lịch hộp thuốc' : 'Schedule matching',
-    test: lang === 'vi' ? 'Thử nghiệm thông báo' : 'Reminder test',
-  }
-
   const success = outcome === 'completed'
-  const achievement = achievementFor(durationMs, failedAttempts, lang)
-  const AchievementIcon = achievement.icon
+  const achievementKey = getAchievementKey(durationMs, failedAttempts)
+  const achievement = t.achievements[achievementKey]
+  const AchievementIcon = ACHIEVEMENT_ICONS[achievementKey]
+  const localizedChallenge = challenge ? t.challenges[challenge.id] : null
+  const challengeTitle = localizedChallenge?.title ?? challenge?.title ?? ''
 
   const handleSaveName = (e: React.FormEvent) => {
     e.preventDefault()
@@ -167,7 +148,7 @@ export function ResultScreen(props: ResultScreenProps) {
                 <p className="text-xl font-extrabold">{achievement.title}</p>
                 <p className="text-sm font-semibold text-navy/60">
                   {achievement.desc}
-                  {challenge ? ` · ${challenge.title}` : ''}
+                  {challengeTitle ? ` · ${challengeTitle}` : ''}
                 </p>
               </div>
             </div>
@@ -219,7 +200,7 @@ export function ResultScreen(props: ResultScreenProps) {
         <div className="mt-8 rounded-3xl bg-white p-5 shadow-soft ring-1 ring-brand/10">
           <h2 className="mb-3 text-lg font-extrabold">{t.completedStages}</h2>
           <ul className="grid gap-2 sm:grid-cols-3">
-            {(Object.keys(stageLabels) as Stage[]).map((stage) => (
+            {(Object.keys(t.stageLabels) as Stage[]).map((stage) => (
               <li
                 key={stage}
                 className={`flex items-center gap-2 rounded-2xl px-4 py-3 font-bold ${
@@ -231,7 +212,7 @@ export function ResultScreen(props: ResultScreenProps) {
                 ) : (
                   <CircleDashed className="size-5" aria-hidden="true" />
                 )}
-                <span className="flex-1">{stageLabels[stage]}</span>
+                <span className="flex-1">{t.stageLabels[stage]}</span>
                 <span className="tabular-nums">{completed[stage] ? `+${STAGE_POINTS}` : '0'}</span>
               </li>
             ))}
@@ -244,10 +225,7 @@ export function ResultScreen(props: ResultScreenProps) {
         <Button size="xl" onClick={onPlayAgain} autoFocus icon={<RotateCcw className="size-6" aria-hidden="true" />}>
           {success ? t.btnPlayAgain : t.btnTryAgain}
         </Button>
-        <Button size="xl" variant="secondary" onClick={onLearnMore} icon={<BookOpen className="size-6" aria-hidden="true" />}>
-          {t.btnLearnMore}
-        </Button>
-        <Button size="xl" variant="ghost" onClick={onHome} icon={<Home className="size-6" aria-hidden="true" />}>
+        <Button size="xl" variant="secondary" onClick={onHome} icon={<Home className="size-6" aria-hidden="true" />}>
           {t.btnBackHome}
         </Button>
       </div>

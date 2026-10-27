@@ -2,7 +2,7 @@ export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
 
 export type RepeatMode = 'daily' | 'weekdays' | 'weekends' | 'custom'
 
-export type TimeSlot = 'morning' | 'noon' | 'afternoon' | 'evening'
+export type TimeSlot = 'morning' | 'noon' | 'evening'
 
 export type ChallengeIcon = 'sunrise' | 'sun' | 'moon' | 'early' | 'weekend' | 'afternoon' | 'custom' | 'double'
 

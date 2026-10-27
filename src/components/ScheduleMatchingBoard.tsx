@@ -1,8 +1,8 @@
-import { ArrowRight, Check, CircleAlert, CircleCheck, Coffee, Eraser, Info, Moon, Sun, Sunrise, type LucideIcon } from 'lucide-react'
+import { ArrowRight, Check, CircleAlert, CircleCheck, Eraser, Info, Moon, Sun, Sunrise, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { WEEKDAYS } from '../game/challenges'
-import type { Lang } from '../game/i18n'
-import { translations } from '../game/i18n'
+import type { Lang, Translation } from '../locales'
+import { translations } from '../locales'
 import { cellKey, describeDays, formatTime12, STAGE_POINTS, TIME_SLOTS, validateMatch, type MatchValidation } from '../game/logic'
 import type { Challenge, ReminderConfig, TimeSlot, Weekday } from '../game/types'
 import { Button } from './ui/Button'
@@ -10,25 +10,7 @@ import { Button } from './ui/Button'
 const SLOT_ICONS: Record<TimeSlot, LucideIcon> = {
   morning: Sunrise,
   noon: Sun,
-  afternoon: Coffee,
   evening: Moon,
-}
-
-const VI_SLOTS: Record<TimeSlot, { label: string; range: string }> = {
-  morning: { label: 'Sáng', range: '5:00 – 11:00' },
-  noon: { label: 'Trưa', range: '11:00 – 14:00' },
-  afternoon: { label: 'Chiều', range: '14:00 – 17:00' },
-  evening: { label: 'Tối', range: '17:00 – 24:00' },
-}
-
-const VI_DAYS_SHORT: Record<Weekday, string> = {
-  Mon: 'T2',
-  Tue: 'T3',
-  Wed: 'T4',
-  Thu: 'T5',
-  Fri: 'T6',
-  Sat: 'T7',
-  Sun: 'CN',
 }
 
 interface ScheduleMatchingBoardProps {
@@ -42,18 +24,14 @@ interface ScheduleMatchingBoardProps {
   onTap: () => void
 }
 
-function feedbackMessage(result: MatchValidation, isVi: boolean): string {
-  if (isVi) {
-    if (result.missing > 0 && result.extra > 0)
-      return `Chưa khớp hoàn toàn! Còn thiếu ${result.missing} ngăn và thừa ${result.extra} ngăn. Hãy so sánh lại với lịch nhắc.`
-    if (result.missing > 0)
-      return `Gần đúng rồi! Còn thiếu ${result.missing} ngăn thuốc chưa được chọn. Hãy kiểm tra kỹ các ngày lặp lại.`
-    return `Gần chuẩn rồi! Có ${result.extra} ngăn đã chọn không thuộc lịch uống thuốc. Hãy bỏ chọn nhé.`
+function feedbackMessage(result: MatchValidation, t: Translation): string {
+  if (result.missing > 0 && result.extra > 0) {
+    return t.matchFeedbackMissingAndExtra(result.missing, result.extra)
   }
-  if (result.missing > 0 && result.extra > 0) return "Close! Some compartments are missing and some don't belong. Compare with your reminder."
-  if (result.missing > 0)
-    return `Almost! ${result.missing} compartment${result.missing === 1 ? ' is' : 's are'} still missing. Check every reminder day.`
-  return `Nearly there! ${result.extra} selected compartment${result.extra === 1 ? " isn't" : "s aren't"} part of your schedule.`
+  if (result.missing > 0) {
+    return t.matchFeedbackMissing(result.missing)
+  }
+  return t.matchFeedbackExtra(result.extra)
 }
 
 export function ScheduleMatchingBoard({
@@ -70,7 +48,6 @@ export function ScheduleMatchingBoard({
   const [result, setResult] = useState<MatchValidation | null>(null)
   const [attempt, setAttempt] = useState(0)
   const t = translations[lang]
-  const isVi = lang === 'vi'
 
   useEffect(() => {
     if (!completed) return
@@ -138,7 +115,7 @@ export function ScheduleMatchingBoard({
             </span>
           ))}
           <span className="rounded-xl bg-brand-light px-3 py-1.5 text-base font-bold text-brand">
-            {describeDays(reminder.days, lang)}
+            {describeDays(reminder.days, t)}
           </span>
           {reminder.label && <span className="rounded-xl bg-success-light px-3 py-1.5 text-base font-bold text-success">{reminder.label}</span>}
         </div>
@@ -152,7 +129,7 @@ export function ScheduleMatchingBoard({
         <div
           key={`board-${attempt}`}
           role="group"
-          aria-label="Weekly medication organizer"
+          aria-label={t.organizerAriaLabel}
           className={`grid grid-cols-[3rem_repeat(7,minmax(0,1fr))] gap-1.5 sm:grid-cols-[8.5rem_repeat(7,minmax(0,1fr))] sm:gap-2.5 ${
             showError ? 'animate-shake' : ''
           }`}
@@ -165,24 +142,24 @@ export function ScheduleMatchingBoard({
                 type="button"
                 onClick={() => toggleGroup(colKeys(day))}
                 disabled={completed}
-                aria-label={`Toggle all ${day} compartments`}
+                aria-label={t.toggleAllDayAria(t.weekdaysShort[day])}
                 className="flex h-10 items-center justify-center rounded-xl bg-navy text-xs font-extrabold text-white transition outline-none hover:bg-brand focus-visible:ring-4 focus-visible:ring-brand/40 disabled:hover:bg-navy sm:h-12 sm:text-base"
               >
-                {isVi ? VI_DAYS_SHORT[day] : day}
+                {t.weekdaysShort[day]}
               </button>
             ))}
           </div>
 
           {TIME_SLOTS.map((slot) => {
             const Icon = SLOT_ICONS[slot.id]
-            const slotInfo = isVi ? VI_SLOTS[slot.id] : slot
+            const slotInfo = t.slots[slot.id]
             return (
               <div key={slot.id} className="contents">
                 <button
                   type="button"
                   onClick={() => toggleGroup(rowKeys(slot.id))}
                   disabled={completed}
-                  aria-label={`Toggle all ${slotInfo.label} compartments (${slotInfo.range})`}
+                  aria-label={t.toggleAllSlotAria(slotInfo.label, slotInfo.range)}
                   className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-white px-1 py-2 text-navy ring-1 ring-brand/15 transition outline-none hover:bg-brand-light focus-visible:ring-4 focus-visible:ring-brand/40 disabled:hover:bg-white sm:flex-row sm:justify-start sm:gap-2.5 sm:px-3"
                 >
                   <Icon className="size-5 shrink-0 text-brand sm:size-6" aria-hidden="true" />
@@ -199,7 +176,7 @@ export function ScheduleMatchingBoard({
                       key={key}
                       type="button"
                       aria-pressed={isOn}
-                      aria-label={`${day} ${slotInfo.label}`}
+                      aria-label={t.compartmentAria(t.weekdaysShort[day], slotInfo.label)}
                       disabled={completed}
                       onClick={() => toggleCell(key)}
                       className={`group relative flex aspect-square items-center justify-center rounded-xl transition-all duration-200 outline-none focus-visible:ring-4 focus-visible:ring-brand/40 sm:aspect-[4/3] sm:rounded-2xl ${
@@ -229,7 +206,7 @@ export function ScheduleMatchingBoard({
         {showError && (
           <p className="mx-auto flex max-w-2xl items-start gap-3 rounded-2xl bg-danger-light px-4 py-3 font-semibold text-navy ring-1 ring-danger/30 animate-fade-up">
             <CircleAlert className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden="true" />
-            {feedbackMessage(result, isVi)}
+            {feedbackMessage(result, t)}
           </p>
         )}
         {completed && (

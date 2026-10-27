@@ -3,7 +3,6 @@ import { AppHeader } from './components/AppHeader'
 import { ChallengeCardDeck } from './components/ChallengeCardDeck'
 import { HowToPlayModal } from './components/HowToPlayModal'
 import { LeaderboardModal } from './components/LeaderboardModal'
-import { LearnMoreModal } from './components/LearnMoreModal'
 import { ReminderSetupForm } from './components/ReminderSetupForm'
 import { ReminderTestPanel } from './components/ReminderTestPanel'
 import { ResultScreen } from './components/ResultScreen'
@@ -50,7 +49,6 @@ export default function App() {
   const [lang, setLang] = useState<Lang>(loadLanguage)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard)
   const [howToOpen, setHowToOpen] = useState(false)
-  const [learnMoreOpen, setLearnMoreOpen] = useState(false)
   const [leaderboardOpen, setLeaderboardOpen] = useState(false)
   const [confirm, setConfirm] = useState<Confirm>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -111,7 +109,6 @@ export default function App() {
 
   const goHome = useCallback(() => {
     setConfirm(null)
-    setLearnMoreOpen(false)
     setLeaderboardOpen(false)
     setResultMeta(null)
     dispatch({ type: 'GO_HOME' })
@@ -166,16 +163,18 @@ export default function App() {
     (name: string) => {
       const duration = (state.finishedAt ?? 0) - (state.startedAt ?? 0)
       const finalScore = scoreFor(state.completed)
+      const challengeTitle =
+        (state.challenge ? t.challenges[state.challenge.id]?.title : null) ?? state.challenge?.title ?? 'Challenge'
       const updated = addLeaderboardEntry({
         name,
         score: finalScore,
         durationMs: duration,
-        challengeTitle: state.challenge?.title ?? 'Challenge',
+        challengeTitle,
       })
       setLeaderboard(updated)
       play('success')
     },
-    [state.finishedAt, state.startedAt, state.completed, state.challenge, play],
+    [state.finishedAt, state.startedAt, state.completed, state.challenge, t, play],
   )
 
   const handleClearLeaderboard = useCallback(() => {
@@ -309,7 +308,6 @@ export default function App() {
               isFastest={resultMeta?.gameId === state.gameId && resultMeta.isFastest}
               lang={lang}
               onPlayAgain={startGame}
-              onLearnMore={() => setLearnMoreOpen(true)}
               onHome={goHome}
               onSaveLeaderboard={handleSaveToLeaderboard}
             />
@@ -322,7 +320,6 @@ export default function App() {
       </footer>
 
       <HowToPlayModal open={howToOpen} lang={lang} onClose={() => setHowToOpen(false)} onStart={startGame} />
-      <LearnMoreModal open={learnMoreOpen} lang={lang} onClose={() => setLearnMoreOpen(false)} />
       <LeaderboardModal
         open={leaderboardOpen}
         lang={lang}

@@ -1,7 +1,6 @@
 import { BellRing, CalendarCheck, HeartHandshake, Lightbulb } from 'lucide-react'
-import type { Lang } from '../game/i18n'
-import { translations } from '../game/i18n'
-import { Button } from './ui/Button'
+import type { Lang } from '../locales'
+import { translations } from '../locales'
 import { Modal } from './ui/Modal'
 
 export function LearnMoreModal({ open, lang, onClose }: { open: boolean; lang: Lang; onClose: () => void }) {
@@ -20,11 +19,6 @@ export function LearnMoreModal({ open, lang, onClose }: { open: boolean; lang: L
       onClose={onClose}
       title={t.meetTitle}
       size="lg"
-      footer={
-        <Button size="lg" onClick={onClose} className="w-full sm:w-auto">
-          {t.btnGotIt}
-        </Button>
-      }
     >
       <p className="text-lg text-pretty text-navy/70">
         {t.meetIntro}
